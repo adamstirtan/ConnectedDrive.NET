@@ -1,6 +1,6 @@
-﻿namespace ConnectedDrive.NET;
+﻿namespace ConnectedDrive;
 
-public enum Region
+public enum Regions
 {
     NorthAmerica,
     China,
