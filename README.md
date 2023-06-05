@@ -1,6 +1,8 @@
 # ConnectedDrive.NET
 A .NET library for BMW Connected Drive available on NuGet. 🚗
 
+![CI](https://github.com/adamstirtan/ConnectedDrive.NET/actions/workflows/ci.yml/badge.svg)
+
 ConnectedDrive is a collection of electronic features for BMW vehicles. This library supports:
 
 - Vehicle Status
