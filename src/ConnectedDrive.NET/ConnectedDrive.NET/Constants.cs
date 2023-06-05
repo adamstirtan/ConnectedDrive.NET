@@ -1,4 +1,6 @@
-﻿namespace ConnectedDrive
+﻿using ConnectedDrive.Models;
+
+namespace ConnectedDrive
 {
     public class Constants
 	{
