@@ -10,6 +10,8 @@ namespace ConnectedDrive
 
 		public Regions Region { get; set; }
 
+		public string AccessToken { get; set; }
+
 		public Account(
 			string userName,
 			string password,
