@@ -6,6 +6,7 @@ using Polly;
 using Polly.Retry;
 
 using ConnectedDrive.Models;
+using ConnectedDrive.DTO;
 
 namespace ConnectedDrive
 {
@@ -19,9 +20,7 @@ namespace ConnectedDrive
 		{
 			_account = account;
 
-			_httpClient.DefaultRequestHeaders.Clear();
 			_httpClient.DefaultRequestHeaders.Add("Accept-Language", "en");
-			//_httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json;charset=UTF-8");
 			_httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
             _httpClient.DefaultRequestHeaders.Add("x-user-agent", Constants.UserAgentMap[_account.Region]);
 
@@ -40,9 +39,35 @@ namespace ConnectedDrive
 
 		private async Task<string> GetAccessTokenAsync()
 		{
-			await Task.Delay(1000);
+			string url = $"https://{Constants.ServerEndpoints[_account.Region]}/eadrax-ucs/v1/presentation/oauth/config";
 
-			return "access_token";
+            HttpRequestMessage authenticationSettingsRequest = new HttpRequestMessage(HttpMethod.Get, url);
+
+            authenticationSettingsRequest.Headers.Add("ocp-apim-subscription-key", Constants.OAuthAuthorizationKeys[_account.Region]);
+
+			AuthenticationSettingsDTO? authenticationSettings;
+
+			using (HttpResponseMessage response = await _httpClient.SendAsync(authenticationSettingsRequest, HttpCompletionOption.ResponseHeadersRead))
+			{
+				response.EnsureSuccessStatusCode();
+
+				var stream = await response.Content.ReadAsStreamAsync();
+
+				authenticationSettings = await JsonSerializer.DeserializeAsync<AuthenticationSettingsDTO>(stream);
+			}
+
+			if (authenticationSettings is null)
+			{
+				throw new Exception("BMW authentication settings service is unavailable");
+			}
+
+			OAuthParametersDTO authenticationParameters = new()
+			{
+				ClientId = authenticationSettings.ClientId,
+				ResponseType = "code"
+			};
+
+            return "access_token";
 		}
 
 		public async Task<Vehicle[]> GetVehicles()

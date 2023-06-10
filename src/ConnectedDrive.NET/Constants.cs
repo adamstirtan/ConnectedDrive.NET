@@ -11,7 +11,7 @@ namespace ConnectedDrive
 			{ Regions.China, "myprofile.bmw.com.cn" }
 		};
 
-		public static readonly Dictionary<Regions, string> EndpointMap = new()
+		public static readonly Dictionary<Regions, string> OAuthAuthorizationKeys = new()
 		{
 			{ Regions.NorthAmerica, "31e102f5-6f7e-7ef3-9044-ddce63891362" },
 			{ Regions.RestOfWorld, "4f1c85a3-758f-a37d-bbb6-f8704494acfa" },
