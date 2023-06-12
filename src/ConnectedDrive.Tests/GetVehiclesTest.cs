@@ -10,7 +10,7 @@ namespace ConnectedDrive.Tests
 		[TestMethod]
 		public async Task GetVehiclesIsNotNull()
 		{
-			Account account = new Account("user@gmail.com", "password", Regions.NorthAmerica);
+			Account account = new Account("adamstirtan@gmail.com", "o5sboVazcGLLO6&K5RpN&GVO6", Regions.NorthAmerica);
 
 			ConnectedDrive api = new ConnectedDrive(account);
 
