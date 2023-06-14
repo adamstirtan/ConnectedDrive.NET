@@ -21,7 +21,5 @@ namespace ConnectedDrive
 			Password = password;
 			Region = region;
 		}
-
-
 	}
 }
