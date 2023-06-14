@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectedDrive", "Connected
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectedDrive.Tests", "ConnectedDrive.Tests\ConnectedDrive.Tests.csproj", "{AD052FF4-5B54-466C-B365-ACD1BD9D7170}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectedDrive.NET.ConsoleApp", "ConnectedDrive.NET.ConsoleApp\ConnectedDrive.NET.ConsoleApp.csproj", "{4439D5F3-050D-48CB-930A-5BB295F0486C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{AD052FF4-5B54-466C-B365-ACD1BD9D7170}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD052FF4-5B54-466C-B365-ACD1BD9D7170}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD052FF4-5B54-466C-B365-ACD1BD9D7170}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4439D5F3-050D-48CB-930A-5BB295F0486C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4439D5F3-050D-48CB-930A-5BB295F0486C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4439D5F3-050D-48CB-930A-5BB295F0486C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4439D5F3-050D-48CB-930A-5BB295F0486C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

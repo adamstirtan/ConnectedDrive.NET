@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Web;
 
 using Microsoft.IdentityModel.Tokens;
 
@@ -12,7 +13,6 @@ using Polly.Retry;
 
 using ConnectedDrive.Models;
 using ConnectedDrive.DTO;
-using System.Web;
 
 namespace ConnectedDrive
 {
@@ -29,6 +29,7 @@ namespace ConnectedDrive
 			_httpClient.DefaultRequestHeaders.Add("Accept-Language", "en");
 			_httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
             _httpClient.DefaultRequestHeaders.Add("X-User-Agent", Constants.UserAgentMap[_account.Region]);
+            _httpClient.DefaultRequestHeaders.Add("X-Identity-Provider", Constants.IdentityProvider);
 
             _retryPolicy = Policy
 				.HandleResult<HttpResponseMessage>(response => !response.IsSuccessStatusCode)
@@ -45,11 +46,15 @@ namespace ConnectedDrive
 
 		private async Task<string> GetAccessTokenAsync()
         {
+            string correlationId = Guid.NewGuid().ToString();
             string authenticationSettingsUrl = $"https://{Constants.ServerEndpoints[_account.Region]}/eadrax-ucs/v1/presentation/oauth/config";
 
             HttpRequestMessage authenticationSettingsRequest = new HttpRequestMessage(HttpMethod.Get, authenticationSettingsUrl);
 
             authenticationSettingsRequest.Headers.Add("OCP-APIM-Subscription-Key", Constants.OAuthAuthorizationKeys[_account.Region]);
+            authenticationSettingsRequest.Headers.Add("X-Correlation-Id", correlationId);
+            authenticationSettingsRequest.Headers.Add("BMW-Session-Id", correlationId);
+            authenticationSettingsRequest.Headers.Add("BMW-Correlation-Id", correlationId);
 
             AuthenticationSettingsDTO? authenticationSettings;
 
@@ -96,6 +101,10 @@ namespace ConnectedDrive
 
             HttpRequestMessage authenticationRequest = new HttpRequestMessage(HttpMethod.Post, authenticationUrl);
 
+            authenticationRequest.Headers.Add("X-Correlation-Id", correlationId);
+            authenticationRequest.Headers.Add("BMW-Session-Id", correlationId);
+            authenticationRequest.Headers.Add("BMW-Correlation-Id", correlationId);
+
             List<KeyValuePair<string, string>> collection = new();
 
             collection.Add(new("grant_type", "authorization_code"));
@@ -137,7 +146,11 @@ namespace ConnectedDrive
 
             collection.Add(new("authorization", authorization));
 
-            HttpRequestMessage authorizationRequest = new HttpRequestMessage(HttpMethod.Post, authenticationUrl);
+            HttpRequestMessage authorizationRequest = new HttpRequestMessage(HttpMethod.Post, authenticationUrl.Replace("authenticate", "token"));
+
+            authorizationRequest.Headers.Add("X-Correlation-Id", correlationId);
+            authorizationRequest.Headers.Add("BMW-Session-Id", correlationId);
+            authorizationRequest.Headers.Add("BMW-Correlation-Id", correlationId);
 
             authorizationRequest.Content = new FormUrlEncodedContent(collection);
 

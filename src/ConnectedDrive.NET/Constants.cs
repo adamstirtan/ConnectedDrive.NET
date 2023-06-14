@@ -26,6 +26,8 @@ namespace ConnectedDrive
 			{ Regions.China, "android(SP1A.210812.016.C1);bmw;2.3.0(13603);cn" }
 		};
 
+		public static readonly string IdentityProvider = "gcdm";
+
 		public static readonly string GetVehiclesUrl = "/eadrax-vcs/v2/vehicles";
 
         public static readonly string RemoteServicesUrl = "/eadrax-vrccs/v2/presentation/remote-commands";
@@ -37,4 +39,3 @@ namespace ConnectedDrive
         public static readonly string StatusRemoteServicePositionUrl = RemoteServicesUrl + "/eventPosition?eventId={eventId}";
     }
 }
-
