@@ -5,7 +5,7 @@ VisualStudioVersion = 17.6.33712.159
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectedDrive", "ConnectedDrive.NET\ConnectedDrive.csproj", "{353763C4-F049-4A33-AFA2-919E4704C6AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectedDrive.Tests", "ConnectedDrive.Tests\ConnectedDrive.Tests.csproj", "{AD052FF4-5B54-466C-B365-ACD1BD9D7170}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectedDrive.NET.Tests", "ConnectedDrive.NET.Tests\ConnectedDrive.NET.Tests.csproj", "{AD052FF4-5B54-466C-B365-ACD1BD9D7170}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectedDrive.NET.ConsoleApp", "ConnectedDrive.NET.ConsoleApp\ConnectedDrive.NET.ConsoleApp.csproj", "{4439D5F3-050D-48CB-930A-5BB295F0486C}"
 EndProject

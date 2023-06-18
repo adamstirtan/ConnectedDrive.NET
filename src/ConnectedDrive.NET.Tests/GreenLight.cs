@@ -1,4 +1,4 @@
-namespace ConnectedDrive.Tests
+namespace ConnectedDrive.NET.Tests
 {
     [TestClass]
     public class GreenLight
