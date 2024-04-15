@@ -3,8 +3,8 @@ using System.Text.Json.Serialization;
 
 namespace ConnectedDrive.DTO
 {
-	public class AuthenticationSettingsDTO
-	{
+    public class AuthenticationSettingsDTO
+    {
         [JsonPropertyName("clientName")]
         public string ClientName { get; set; } = string.Empty;
 

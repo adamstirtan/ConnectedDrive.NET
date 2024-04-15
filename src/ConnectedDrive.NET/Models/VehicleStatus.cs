@@ -1,6 +1,5 @@
 ﻿namespace ConnectedDrive.Models
 {
-	public class VehicleStatus
-	{ }
+    public class VehicleStatus
+    { }
 }
-

@@ -2,24 +2,17 @@
 
 namespace ConnectedDrive
 {
-	public class Account
-	{
-		public string UserName { get; private set; }
+    public class Account(
+            string userName,
+            string password,
+            Regions region)
+    {
+        public string UserName { get; private set; } = userName;
 
-		public string Password { get; set; }
+        public string Password { get; set; } = password;
 
-		public Regions Region { get; set; }
+        public Regions Region { get; set; } = region;
 
-		public string? AccessToken { get; set; }
-
-		public Account(
-			string userName,
-			string password,
-			Regions region)
-		{
-			UserName = userName;
-			Password = password;
-			Region = region;
-		}
-	}
+        public string? AccessToken { get; set; }
+    }
 }

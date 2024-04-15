@@ -1,55 +1,39 @@
-﻿using System;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Web;
 
 using Microsoft.IdentityModel.Tokens;
 
-using Polly;
-using Polly.Retry;
-
 using ConnectedDrive.Models;
 using ConnectedDrive.DTO;
 
 namespace ConnectedDrive
 {
-    public partial class ConnectedDrive
-	{
-		private readonly Account _account;
-        private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
-        private readonly HttpClient _httpClient = new HttpClient();
+    public class ConnectedDriveClient
+    {
+        private readonly Account _account;
+        private readonly HttpClient _httpClient = new();
 
-		public ConnectedDrive(Account account)
-		{
-			_account = account;
+        private bool _isAuthenticated;
+        private string? _accessToken = string.Empty;
 
-			_httpClient.DefaultRequestHeaders.Add("Accept-Language", "en");
-			_httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
+        public ConnectedDriveClient(Account account)
+        {
+            _account = account;
+
+            _httpClient.DefaultRequestHeaders.Add("Accept-Language", "en");
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
             _httpClient.DefaultRequestHeaders.Add("X-User-Agent", Constants.UserAgentMap[_account.Region]);
             _httpClient.DefaultRequestHeaders.Add("X-Identity-Provider", Constants.IdentityProvider);
-
-            _retryPolicy = Policy
-				.HandleResult<HttpResponseMessage>(response => !response.IsSuccessStatusCode)
-				.RetryAsync(3, async (response, retryCount) =>
-				{
-					if (response.Result.StatusCode == HttpStatusCode.Unauthorized)
-					{
-						string accessToken = await GetAccessTokenAsync();
-
-						_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-					}
-				});
         }
 
-		private async Task<string> GetAccessTokenAsync()
+        private async Task AuthenticateAsync()
         {
             string correlationId = Guid.NewGuid().ToString();
             string authenticationSettingsUrl = $"https://{Constants.ServerEndpoints[_account.Region]}/eadrax-ucs/v1/presentation/oauth/config";
 
-            HttpRequestMessage authenticationSettingsRequest = new HttpRequestMessage(HttpMethod.Get, authenticationSettingsUrl);
+            HttpRequestMessage authenticationSettingsRequest = new(HttpMethod.Get, authenticationSettingsUrl);
 
             authenticationSettingsRequest.Headers.Add("OCP-APIM-Subscription-Key", Constants.OAuthAuthorizationKeys[_account.Region]);
             authenticationSettingsRequest.Headers.Add("X-Correlation-Id", correlationId);
@@ -72,7 +56,7 @@ namespace ConnectedDrive
                 throw new Exception("BMW authentication settings service is unavailable");
             }
 
-            Random random = new Random();
+            Random random = new();
 
             byte[] stateBytes = new byte[16];
             byte[] codeVerifierBytes = new byte[64];
@@ -99,13 +83,13 @@ namespace ConnectedDrive
 
             string authenticationUrl = $"{authenticationSettings.GCDMBaseUrl}/gcdm/oauth/authenticate";
 
-            HttpRequestMessage authenticationRequest = new HttpRequestMessage(HttpMethod.Post, authenticationUrl);
+            HttpRequestMessage authenticationRequest = new(HttpMethod.Post, authenticationUrl);
 
             authenticationRequest.Headers.Add("X-Correlation-Id", correlationId);
             authenticationRequest.Headers.Add("BMW-Session-Id", correlationId);
             authenticationRequest.Headers.Add("BMW-Correlation-Id", correlationId);
 
-            List<KeyValuePair<string, string>> collection = new();
+            List<KeyValuePair<string, string>> collection = [];
 
             collection.Add(new("grant_type", "authorization_code"));
             collection.Add(new("username", _account.UserName));
@@ -137,16 +121,14 @@ namespace ConnectedDrive
                 throw new Exception("BMW authentication settings service is unavailable");
             }
 
-            var authorization = HttpUtility.ParseQueryString(authentication.RedirectTo).Get("authorization");
-
-            if (authorization is null)
-            {
+            var authorization = HttpUtility
+                .ParseQueryString(authentication.RedirectTo)
+                .Get("authorization") ??
                 throw new Exception("BMW authorization key was not provided");
-            }
 
             collection.Add(new("authorization", authorization));
 
-            HttpRequestMessage authorizationRequest = new HttpRequestMessage(HttpMethod.Post, authenticationUrl.Replace("authenticate", "token"));
+            HttpRequestMessage authorizationRequest = new(HttpMethod.Post, authenticationUrl.Replace("authenticate", "token"));
 
             authorizationRequest.Headers.Add("X-Correlation-Id", correlationId);
             authorizationRequest.Headers.Add("BMW-Session-Id", correlationId);
@@ -158,49 +140,62 @@ namespace ConnectedDrive
             {
                 response.EnsureSuccessStatusCode();
 
-                string s = await response.Content.ReadAsStringAsync();
+                string accessToken = await response.Content.ReadAsStringAsync();
+
+                _accessToken = accessToken;
+                _isAuthenticated = true;
             }
 
-            return "access_token";
+            if (_isAuthenticated == false)
+            {
+                throw new Exception("Authentication failed.");
+            }
         }
 
         public async Task<Vehicle[]> GetVehicles()
-		{
+        {
             string parameters =
-				$"apptimezone={120}&appDateTime={DateTimeOffset.Now.ToUnixTimeMilliseconds()}&tireGuardMode=ENABLED";
+                $"apptimezone={120}&appDateTime={DateTimeOffset.Now.ToUnixTimeMilliseconds()}&tireGuardMode=ENABLED";
 
             string url =
-				$"https://{Constants.ServerEndpoints[_account.Region]}{Constants.GetVehiclesUrl}?{parameters}";
+                $"https://{Constants.ServerEndpoints[_account.Region]}{Constants.GetVehiclesUrl}?{parameters}";
 
-			var vehicles = await Request<Vehicle[]>(HttpMethod.Get, url);
+            var vehicles = await Request<Vehicle[]>(HttpMethod.Get, url);
 
             return vehicles switch
             {
-                null => Array.Empty<Vehicle>(),
+                null => [],
                 _ => vehicles
             };
         }
 
-		public Task<VehicleStatus> GetVehicleStatus(string vin)
-		{
-			throw new NotImplementedException();
-		}
+        public Task<VehicleStatus> GetVehicleStatus(string vin)
+        {
+            throw new NotImplementedException();
+        }
 
-		public Task<bool> LockDoors(string vin)
-		{
-			throw new NotImplementedException();
-		}
+        public Task<bool> LockDoors(string vin)
+        {
+            throw new NotImplementedException();
+        }
 
-		public Task<bool> UnlockDoors(string vin)
-		{
-			throw new NotImplementedException();
-		}
+        public Task<bool> UnlockDoors(string vin)
+        {
+            throw new NotImplementedException();
+        }
 
-		private async Task<T?> Request<T>(HttpMethod method, string url)
-		{
-			HttpRequestMessage request = new HttpRequestMessage(method, url);
+        private async Task<T?> Request<T>(HttpMethod method, string url)
+        {
+            if (!_isAuthenticated)
+            {
+                await AuthenticateAsync();
+            }
 
-			request.Headers.Add("Accept", method == HttpMethod.Get ? "application/json" : "application/json;charset=utf-8");
+            Console.WriteLine(_accessToken);
+
+            HttpRequestMessage request = new(method, url);
+
+            request.Headers.Add("Accept", method == HttpMethod.Get ? "application/json" : "application/json;charset=utf-8");
 
             Guid correlationId = Guid.NewGuid();
 
@@ -208,15 +203,13 @@ namespace ConnectedDrive
             request.Headers.Add("bmw-correlation-id", correlationId.ToString());
             request.Headers.Add("bmw-session-id", correlationId.ToString());
 
-			using (HttpResponseMessage response = await _retryPolicy.ExecuteAsync(() => _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead)))
-			{
-				response.EnsureSuccessStatusCode();
+            using HttpResponseMessage response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
-				var stream = await response.Content.ReadAsStreamAsync();
+            response.EnsureSuccessStatusCode();
 
-				return await JsonSerializer.DeserializeAsync<T>(stream);
-			}
+            var stream = await response.Content.ReadAsStreamAsync();
+
+            return await JsonSerializer.DeserializeAsync<T>(stream);
         }
-	}
+    }
 }
-
